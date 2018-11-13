@@ -1,7 +1,7 @@
 # tMyTicketService
 Implement a simple ticket service that facilitates the discovery, temporary hold, and final reservation of seats within a high-demand performance venue.
 # Project Title TicketService
-Reminder Rest web service using spring boot 2.1, job scheduler  2- swagger ui- spring 5, hibernate and  h2 DB. And AssertJ for junit
+Ticket service Rest web service using spring boot 2.1, job scheduler  2- swagger ui- spring 5, hibernate and  h2 DB. And AssertJ for junit
 
 We need to add a create a venue, register a customer and a crea a show before we can book seats for a show. Although the example was a venue with 1 stage and 1 floor of 9(rows)x33(cols), I designed the app to support multiple venues/stages and floors.
 
@@ -49,10 +49,14 @@ the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.g
 
 3- Using a parameter to determine if we will consider adjacents seats if value is false we just assign the available seats in order. If the value is true then if we selected seat 4 but next one is 5 we stop the process and return the selected so far.
 
-4- Using a temp table for the process   with some primary key and some indexes. we execute one query with show id, venue id, stage id(an index to execute faster) and the result is sorted per seat number.
+4- Using a temp table for the process   with some primary key and some indexes. we execute one query with show id, venue id, stage id(an index to execute faster) and the result is sorted per seat number. We we commit the reserved seats the app will move the recors to ticket table so that this can be used as a history table and remove the record from booking tables to avoid performances issues with huge tables.
 
 
 5- We are using the scheduler and 4 controller on same projects but for production every controller and the scheduler can be separated in different microservices.
+
+
+6- We are using spring test and asserjt for junit. I am not covering so much code because of time restriction, so I chose one controler and some few class, but I demostrated how to do the integration class, junit the control com mockMvc, and a Health endpoint with spring boot actuators.
+
 
 
 ```
