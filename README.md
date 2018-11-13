@@ -11,7 +11,7 @@ I also has a strategy pattern and factory to add more seat selection base on a s
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-1- Download the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git .
+1- Download the project: the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git.
 
 2- mvn clean install
 
@@ -36,6 +36,26 @@ What things you need to install the software and how to install them
 
 We need maven 3.5, java 8 sdk and java  runtime >=8
 
+the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git .
+
+
+### Design Considerations
+```
+1- Using a optimistic locking solution to avoid blocking the database connections and affect performance for concurrence users and reduce chances of deadlock. 
+
+the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git .
+
+2- Using a design patter to based on properties configuration inject the correct strategy used to pick the best seats, I am using a simple solution picking the seats based on seat number.
+
+3- Using a parameter to determine if we will consider adjacents seats if value is false we just assign the available seats in order. If the value is true then if we selected seat 4 but next one is 5 we stop the process and return the selected so far.
+
+4- Using a temp table for the process   with some primary key and some indexes. we execute one query with show id, venue id, stage id(an index to execute faster) and the result is sorted per seat number.
+
+
+5- We are using the scheduler and 4 controller on same projects but for production every controller and the scheduler can be separated in different microservices.
+
+
+```
 
 
 ### Installing
@@ -395,160 +415,21 @@ response
 ```
 
 
-now we can commit the tickets with the exact same request used for reserve.
+Now we can commit the tickets with the exact same request used for reserve.
+``` REQUEST:
+{
+  "contiguousSeat": false,
+  "customerId": "de2bf5c1-7a91-4540-a3b3-d8477f2d9de7",
+  "seatsToHeld": 4,
+  "showId": "5d44b4e8-43ce-4dc5-8e47-7ced0ebaecca",
+  "stage": "79593ffd-3744-489b-9943-e1b20d2c2226",
+  "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123"
+}
+
+```
+
 
 NOTE if we don't reserve the tickets within  60 seconds of execute the held api, the scheduled job will release the seats so anyone can pick those seats again. If you reserve it you have 10 minutes to buy the tickets otherwise the scheduler will release the seats.
-
-
-``` REQUEST:
-The json used to create a reminder is 
-{
-  "id": 0,
-  "name": "test1",
-  "description": "description ",
-  "dueDate": "2018-07-29T09:00:32.568Z",
-  "status": "DONE"
-}
-dueDate cannot be a past date because service will trigger a validation error.
-status can only be NOTDONE or DONE otherwise service will throw a validation error.
-
-```
-
-``` RESPONSE:
-
-{
-    "dueDate": "2018-07-27T09:41:18.707-07:00",
-    "error": false,
-    "id": 3,
-    "message": "need to finish before tomorrow first reminder",
-    "status": "DONE",
-    "type": "email type"
-}
-
-We need to keep the id(primary key in the database) number for future transactions, for instance if we need to update or delete a reminder the service will expect such id, if the id is incorrect or is not present in the database the application will respond back with an error. 
-```
-
-Steps for testing:
-1-Open google crome and copy the url:http://localhost:8080/reminderservice/
-
-2- click in any http method that you wish to test, for instance if we want to add a reminder, click in the POST
-
-3- Click the bottom Try it out.
-
-4- You will see how it is enable the json file, please see the comments regarding the date format, you don't need to add an id, the app will generate one automatically.
-
-{
-  "id": 0,
-  "name": "string",
-  "description": "string",
-  "dueDate": "2018-07-27T15:12:56.958Z",
-  "status": "NOTDONE"
-}
-
-5- Then click the botton execute, if you don't change the date see the error in the secction Responses
-addReminder.arg0.dueDate - must be in the future
-This is intentionally in order to demostate the validation of the field using jersey validation.
-
-6- After changing the date and getting a successful response, take note of the id that will be used for update and delete operations later on,also see the dueDate field that will be used in the get method.
-
-Request
-{
-  "id": 0,
-  "name": "string",
-  "description": "string",
-  "dueDate": "2018-07-28T15:12:56.958Z",
-  "status": "NOTDONE"
-}
-
-``` RESPONSE:
-
-
-201	
-Response body
-Download
-{
-  "description": "string",
-  "dueDate": "2018-07-28T08:12:56.958-07:00",
-  "error": false,
-  "id": 1,
-  "message": "created reminder:1",
-  "name": "string",
-  "status": "NOTDONE",
-  "tcn": 1,
-  "type": "email type"
-}
-Response headers
- content-length: 181 
- content-type: application/json 
- date: Fri, 27 Jul 2018 15:19:37 GMT 
- server: Apache-Coyote/1.1 
-```
-
-
-7-Now we click in Get method, same thihg for the first time click Try it out.
-
-if you see the response in step 6, we can query using the dueDate=2018-07-28T08:12:56.958-07:00 and/or the status=NOTDONE
-
-8- For update or delete we repeat same operations, click the method, then Try it out for the first time
-
-9- Update Reminder, click PUT method
-
-``` REQUEST:
-{
-  "id": 1,
-  "name": "Reminder1",
-  "description": "reminder used for  zumba class",
-  "dueDate": "2018-07-27T15:33:10.814Z",
-  "status": "NOTDONE"
-}
-
-```
-
-
-
-``` RESPONSE:
-
-{
-  "description": "reminder used for  zumba class",
-  "dueDate": "2018-07-29T08:33:10.814-07:00",
-  "error": false,
-  "id": 1,
-  "message": "Updated reminder:1",
-  "name": "Reminder1",
-  "status": "NOTDONE",
-  "tcn": 0,
-  "type": "email type"
-}
-
-Now we can see the changes in the get method, go to step 7 and use the value status=NOTDONE or/and "dueDate": "2018-07-29T08:33:10.814-07:00", repeat same steps for any update and get.
-```
-
-
-10- Delete a Reminder, click Delete method, click Try it out for first time, modify json with id.
-
-``` REQUEST:
-{
-  "id": 1,
-  "name": "string",
-  "description": "string",
-  "dueDate": "2018-07-27T15:41:24.146Z",
-  "status": "NOTDONE"
-}
-
-See that we can pass other values in order to delete using other criterias, but for now, only modify the id with value 1 that we got in step 5,6.
-```
-
-
-
-``` RESPONSE:
-Ther is  no body, only http status 204 if the record is deleted successfuly, you can validate the result in the database or using the get method in the ui.
-
-Response:
-Code	Details
-204	
-Response headers
- date: Fri, 27 Jul 2018 15:44:50 GMT 
- server: Apache-Coyote/1.1 
 
 
 We can see the database going to http://localhost:8080/h2-console and executing the queries: select * from venue;
@@ -562,8 +443,6 @@ select * from booking where expiration_time is not  null and expiration_time< sy
 
 select sysdate() from shows;
 
-
-```
 
 
 
