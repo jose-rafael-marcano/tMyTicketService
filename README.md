@@ -182,7 +182,7 @@ then click try it out.
 Use this request: please note  "stageId": "79593ffd-3744-489b-9943-e1b20d2c2226" and  "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123" are the response values from first step.
 
 ```
-``` RESPONSE:
+``` REQUEST:
 
 {
   "artist": "Beyonce",
@@ -202,9 +202,9 @@ we are using optimistic locking to handle concurrency request or race conditions
 
 Recall the venue Id and Stage id from step 1, this is used for show configuration. 
 
-click exeute button 
+click execute button 
 
-``` REQUEST: 
+``` RESPONSE: 
 
 Response:
 {
