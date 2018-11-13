@@ -11,7 +11,7 @@ I also has a strategy pattern and factory to add more seat selection base on a s
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-1- Download the project: the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git.
+1- Download the project: the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git
 
 2- mvn clean install
 
@@ -45,17 +45,32 @@ the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.g
 
 the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.git .
 
-2- Using a design patter to based on properties configuration inject the correct strategy used to pick the best seats, I am using a simple solution picking the seats based on seat number.
+2- Using a design patter to based on properties configuration inject the correct strategy used to pick the best seats, I am using a simple solution picking the seats based on seat number. If we need a new strategy we need to implement the Strategy interface change the configuration and factory.
 
-3- Using a parameter to determine if we will consider adjacents seats if value is false we just assign the available seats in order. If the value is true then if we selected seat 4 but next one is 5 we stop the process and return the selected so far.
+3- Using a parameter("contiguousSeat") to determine if we will consider adjacents seats("contiguousSeat": true) if value is false("contiguousSeat": false) we just assign the available seats in order. If the value is true("contiguousSeat": true) then if we selected seat 4 seats but next one is not adjacent to the last one we stop the process and return the selected one so far.
 
-4- Using a temp table for the process   with some primary key and some indexes. we execute one query with show id, venue id, stage id(an index to execute faster) and the result is sorted per seat number. We we commit the reserved seats the app will move the recors to ticket table so that this can be used as a history table and remove the record from booking tables to avoid performances issues with huge tables.
+4- Using a temp table for the process  with some primary key and some indexes. we execute one query with show id, venue id, stage id(an index to execute faster) and the result is sorted per seat number. We we commit the reserved seats the app will move the recors to ticket table so that this can be used as a history table and remove the record from booking tables to avoid performances issues with huge tables. So the booking table is temporary for instance if we cancel the show we can delete the records associated to the show.
 
 
 5- We are using the scheduler and 4 controller on same projects but for production every controller and the scheduler can be separated in different microservices.
 
+6-When we create a venue, these tables are updated:venue,stage, floor, address; and we have indexes and foreign keys defined using jpa.
 
-6- We are using spring test and asserjt for junit. I am not covering so much code because of time restriction, so I chose one controler and some few class, but I demostrated how to do the integration class, junit the control com mockMvc, and a Health endpoint with spring boot actuators.
+7-When we create a show , these tables are updated:shows,booking. The id are UID, but for performance we use long for booking, this table is used to select the best seats and to handle the workflow held->reserve->commit. So there is no denormalization for booking and we have indexes to improve performance in addition to connection pool and optimistic locking. If we use a second level cache or even better external cache as redis/mencache so we can improve even more some queries. The app will benefit using this approach when you scale out the service, so you don't need to handle the state in the memory, it is just to process very quickly the best seats so that we don't need replication or synchronization between nodes. 
+
+8- We are using normal design with spring microservice lightweight controllers, logic in service and no DAO(less junit), instead of DAO we are using names queries in JPA repositories.
+
+9- Regardon big O for time complexity  is not more than numbers of rows * cols. we don't have stadiums with  100 floors so this can we considered constant and very few sport venues will have meny rows or seats, in addition to that we can configured how many seats a person can held for that show and it is a low number 10 or 20 so it is O(1), therefore there are no performance issues with complex polinomial algorithms so it should be fast. Regarding the memory we have few records it cannot be a big problem and if we need to scale it we can do it horizontally and load balance the load.
+
+10- We can configure the time the scheduler will remove seat with held label and in a separate property the time to consider a clean up of reserved seats. By clean up, I mean releasing the seats associated to a customer id.
+
+11- We can use a nonOnlySql DB but we need transactions and relational are stronger managing transactional data.
+
+12- We are using spring test and assertj for junit. I am not covering so much code because of time restriction, so I chose one controler and some few class, but I demostrated how to do the integration class, junit the control com mockMvc, and a Health endpoint with spring boot actuators.
+
+13- We are not using docker or Eureka or zuul gateway, neither localization and external property configuration due to time restrictions.
+
+
 
 
 
@@ -74,6 +89,9 @@ Say what the step will be
 2- mvn clean install
 
 3- mvn spring-boot:run
+
+4-Note: you will need to change the logback configuration in order to point your file to your specific location otherwise it will redirect logs to  C:/example/serviceticket/debug.log, so please the configuration accordingly in the logback file.
+
 ```
 
 
@@ -221,7 +239,7 @@ Use this request: please note  "stageId": "79593ffd-3744-489b-9943-e1b20d2c2226"
 }
 ```
 
-we are using optimistic locking to handle concurrency request or race conditions so do not modify version hibernate will handle that value on behalf of app automatically.
+we are using optimistic locking to handle concurrency request or race conditions so do not modify version field, hibernate will handle that value on behalf of app automatically.
 
 
 Recall the venue Id and Stage id from step 1, this is used for show configuration. 
