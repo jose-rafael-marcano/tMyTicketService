@@ -105,6 +105,8 @@ click option try it out and copy below request
 
 Use this request.
 
+``` REQUEST:  
+
 {
 	"name": "San Diego theatre",
 	"stages": [{
@@ -124,7 +126,10 @@ Use this request.
 
 }
 
-Click exeute  and you will see that the Response is http status 201(created) with below json
+Click execute  and you will see that the Response is http status 201(created) with below json
+
+```
+``` RESPONSE:
 
 {
   "stageDTOS": [
@@ -137,6 +142,7 @@ Click exeute  and you will see that the Response is http status 201(created) wit
   "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123",
   "name": "San Diego theatre"
 }
+```
 
 
 We need to keep track of the venue id and stage id because it is used in next steps(For instance if we have a UI, the client will need to keep these values)
@@ -175,6 +181,9 @@ then click try it out.
 
 Use this request: please note  "stageId": "79593ffd-3744-489b-9943-e1b20d2c2226" and  "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123" are the response values from first step.
 
+```
+``` RESPONSE:
+
 {
   "artist": "Beyonce",
   "duration": 120,
@@ -186,6 +195,7 @@ Use this request: please note  "stageId": "79593ffd-3744-489b-9943-e1b20d2c2226"
   "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123",
   "version": 0
 }
+```
 
 we are using optimistic locking to handle concurrency request or race conditions so do not modify version hibernate will handle that value on behalf of app automatically.
 
@@ -193,6 +203,8 @@ we are using optimistic locking to handle concurrency request or race conditions
 Recall the venue Id and Stage id from step 1, this is used for show configuration. 
 
 click exeute button 
+
+``` REQUEST: 
 
 Response:
 {
@@ -215,6 +227,9 @@ Response:
   "version": 0,
   "status": "Opened"
 }
+
+```
+
 We will need to store the show id: "id": "5d44b4e8-43ce-4dc5-8e47-7ced0ebaecca"
 
 we can validate the show in db using;
@@ -234,7 +249,8 @@ got to POST ticketservice/customer Request to create a costumer
 
 same procedure as done before click the post then select try it out and use below request or your own request following the example:
 
-Request 
+
+``` REQUEST: 
 
 {
   "address": {
@@ -248,6 +264,7 @@ Request
   "name": "Jose R Marcano",
   "email":"jose.rafael.marcano.r@gmail.com"
 }
+```
 
 
 Response is the customer id. 
@@ -294,7 +311,9 @@ POST
 Find all seats available given a venue id, stage and seat id and then held the best ones
 
 try it out below example:
-   
+  
+
+``` REQUEST:  
 {
   "contiguousSeat": false,
   "customerId": "de2bf5c1-7a91-4540-a3b3-d8477f2d9de7",
@@ -304,6 +323,9 @@ try it out below example:
   "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123"
 }
 
+
+```
+``` RESPONSE:
 
 response
 
@@ -345,12 +367,13 @@ response
     "status": null
   }
 ]
+```
 
 now that we have a held service we can reserve the tickets 
 
 
 click POST /ticketservice/booking/reservation/ Reserve all seats held given a venue id, stage and seat id.
-
+``` REQUEST:
 {
   "contiguousSeat": false,
   "customerId": "de2bf5c1-7a91-4540-a3b3-d8477f2d9de7",
@@ -360,12 +383,16 @@ click POST /ticketservice/booking/reservation/ Reserve all seats held given a ve
   "venueId": "bec7a02b-bc12-46cb-b700-a5ea37730123"
 }
 
+```
+``` RESPONSE:
+
 response 
 
 
 200 reserved 
 
 
+```
 
 
 now we can commit the tickets with the exact same request used for reserve.
