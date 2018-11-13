@@ -70,6 +70,7 @@ the project: git clone https://github.com/jose-rafael-marcano/tMyTicketService.g
 
 13- We are not using docker or Eureka or zuul gateway, neither localization and external property configuration due to time restrictions.
 
+14- I didn't try to use queue systems because i will need to send notifications(another microservice), for instance sms with twilio or emails and I will require more time, in addition I thought that for venue system we don't need have high volume of a big airline system or retail system so  due to time restrictions i didn't dig in that route.
 
 
 
